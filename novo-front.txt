@@ -1,0 +1,296 @@
+# Front-end - Projeto LoRa
+
+Este é um front-end em React (TypeScript) com TailwindCSS que consome a API do Projeto LoRa hospedada em `http://localhost:8890`.
+
+## Setup
+
+1. Clone este repositório.
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
+3. Crie um arquivo `.env` na raiz com:
+   ```
+   VITE_API_URL=http://localhost:8890
+   ```
+4. Inicie o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+
+## Estrutura de Pastas
+
+```
+project-root/
+├─ public/
+│  └─ index.html
+├─ src/
+│  ├─ services/
+│  │  └─ api.ts
+│  ├─ components/
+│  │  ├─ RegisterForm.tsx
+│  │  ├─ LoginForm.tsx
+│  │  └─ DataPage.tsx
+│  ├─ App.tsx
+│  ├─ main.tsx
+│  └─ index.css
+├─ tailwind.config.js
+├─ postcss.config.js
+├─ tsconfig.json
+├─ package.json
+└─ .env
+```
+
+---
+
+### tailwind.config.js
+```js
+// tailwind.config.js
+export default {
+  content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+```
+
+### postcss.config.js
+```js
+// postcss.config.js
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};
+```
+
+### src/index.css
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+### public/index.html
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projeto LoRa</title>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
+```
+
+### src/services/api.ts
+```ts
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+});
+
+export interface RegisterPayload {
+  username: string;
+  password: string;
+}
+
+export interface LoginPayload {
+  username: string;
+  password: string;
+}
+
+export const registerUser = (data: RegisterPayload) =>
+  api.post("/register", data);
+
+export const loginUser = (data: LoginPayload) =>
+  api.post("/login", data);
+
+export const getData = () =>
+  api.post("/get_data");
+```
+
+### src/components/RegisterForm.tsx
+```tsx
+import { useState } from "react";
+import { registerUser } from "../services/api";
+
+const RegisterForm: React.FC = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await registerUser({ username, password });
+      setMessage(response.data.message);
+    } catch (err: any) {
+      setMessage(err.response?.data?.error || "Erro ao registrar");
+    }
+  };
+
+  return (
+    <form onSubmit={handleRegister} className="max-w-md mx-auto p-4">
+      <h2 className="text-xl font-bold mb-4">Registrar</h2>
+      <label className="block mb-2">
+        <span className="text-gray-700">Usuário</span>
+        <input
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+        />
+      </label>
+      <label className="block mb-4">
+        <span className="text-gray-700">Senha</span>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+        />
+      </label>
+      <button
+        type="submit"
+        className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+      >
+        Registrar
+      </button>
+      {message && <p className="mt-4 text-center">{message}</p>}
+    </form>
+  );
+};
+
+export default RegisterForm;
+```
+
+### src/components/LoginForm.tsx
+```tsx
+import { useState } from "react";
+import { loginUser } from "../services/api";
+
+const LoginForm: React.FC = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await loginUser({ username, password });
+      setMessage(response.data.message);
+    } catch (err: any) {
+      setMessage(err.response?.data?.error || "Erro ao logar");
+    }
+  };
+
+  return (
+    <form onSubmit={handleLogin} className="max-w-md mx-auto p-4">
+      <h2 className="text-xl font-bold mb-4">Login</h2>
+      <label className="block mb-2">
+        <span className="text-gray-700">Usuário</span>
+        <input
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+        />
+      </label>
+      <label className="block mb-4">
+        <span className="text-gray-700">Senha</span>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+        />
+      </label>
+      <button
+        type="submit"
+        className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600"
+      >
+        Entrar
+      </button>
+      {message && <p className="mt-4 text-center">{message}</p>}
+    </form>
+  );
+};
+
+export default LoginForm;
+```
+
+### src/components/DataPage.tsx
+```tsx
+import { useEffect, useState } from "react";
+import { getData } from "../services/api";
+
+const DataPage: React.FC = () => {
+  const [data, setData] = useState<any>(null);
+
+  useEffect(() => {
+    getData().then((res) => setData(res.data));
+  }, []);
+
+  return (
+    <div className="p-4">
+      <h2 className="text-xl font-bold mb-4">Dados Recebidos</h2>
+      <pre className="bg-gray-100 p-2 rounded">{JSON.stringify(data, null, 2)}</pre>
+    </div>
+  );
+};
+
+export default DataPage;
+```
+
+### src/App.tsx
+```tsx
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import RegisterForm from "./components/RegisterForm";
+import LoginForm from "./components/LoginForm";
+import DataPage from "./components/DataPage";
+
+const App: React.FC = () => (
+  <BrowserRouter>
+    <nav className="bg-blue-500 p-4 text-white">
+      <Link to="/" className="mr-4 hover:underline">Home</Link>
+      <Link to="/register" className="mr-4 hover:underline">Registrar</Link>
+      <Link to="/login" className="mr-4 hover:underline">Login</Link>
+      <Link to="/data" className="hover:underline">Dados</Link>
+    </nav>
+    <Routes>
+      <Route path="/" element={<div className="p-4">Bem-vindo ao Projeto LoRa</div>} />
+      <Route path="/register" element={<RegisterForm />} />
+      <Route path="/login" element={<LoginForm />} />
+      <Route path="/data" element={<DataPage />} />
+    </Routes>
+  </BrowserRouter>
+);
+
+export default App;
+```
+
+### src/main.tsx
+```tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+```
+
+---
+
+Com este esqueleto, você tem um front-end completo em React+TypeScript+TailwindCSS consumindo a API do Projeto LoRa. Sinta-se à vontade para estender e estilizar conforme suas necessidades!
