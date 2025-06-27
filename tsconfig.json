@@ -3,5 +3,11 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ]
+  ],
+  "compilerOptions": {
+    // Remove automaticamente imports que só são usados como tipos
+    "importsNotUsedAsValues": "remove",
+    // Garante que imports puramente de tipo NÃO sejam preservados no JS gerado
+    "preserveValueImports": false
+  }
 }
